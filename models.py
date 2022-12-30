@@ -650,12 +650,12 @@ class SynthesizerTrn(nn.Module):
     
     
   @torch.jit.unused
-  def run_aligner(self, text, text_len, text_mask, spect, spect_len, attn_prior):
+  def run_aligner(self, text, text_len, text_mask, spect, spect_len, attn_prior,cond):
     text_emb = self.symbol_emb(text)
     text_emb = text_emb.permute(0, 2, 1)
     text_mask = text_mask.permute(0, 2, 1) # [b, 1, mxlen] => [b, mxlen, 1]
     attn_soft, attn_logprob = self.aligner(
-        spect, text_emb, mask=text_mask == 0, attn_prior=attn_prior,conditioning=None
+        spect, text_emb, mask=text_mask == 0, attn_prior=attn_prior,conditioning=cond
     )
     attn_hard = modules.binarize_attention_parallel(attn_soft, text_len, spect_len)
     attn_hard_dur = attn_hard.sum(2)
@@ -674,7 +674,7 @@ class SynthesizerTrn(nn.Module):
 
     z, m_q, logs_q, y_mask = self.enc_q(y, y_lengths, g=g)
     z_p = self.flow(z, y_mask, g=g)
-    attn_soft, attn_logprob, attn, attn_hard_dur = self.run_aligner(x_orig, x_lengths, x_mask, mel, y_lengths,None)
+    attn_soft, attn_logprob, attn, attn_hard_dur = self.run_aligner(x_orig, x_lengths, x_mask, mel, y_lengths,None,g)
 
     w = attn_hard_dur
     if self.use_sdp:

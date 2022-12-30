@@ -196,6 +196,12 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
         # Store spectrogram lengths for Bucketing
         # wav_length ~= file_size / (wav_channels * Bytes per dim) = file_size / (1 * 2)
         # spec_length = wav_length // hop_length
+        
+        
+        au_len = librosa.get_duration(filename=audiopath)
+        if au_len > 7.0:
+             n_fau += 1
+             continue
 
         audiopaths_sid_text_new = []
         lengths = []
@@ -205,6 +211,7 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
                 lengths.append(os.path.getsize(audiopath) // (2 * self.hop_length))
         self.audiopaths_sid_text = audiopaths_sid_text_new
         self.lengths = lengths
+        print(f"{n_fau} removed for too long.")
 
     def get_audio_text_speaker_pair(self, audiopath_sid_text):
         # separate filename, speaker_id and text
