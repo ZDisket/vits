@@ -198,14 +198,17 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
         # spec_length = wav_length // hop_length
         
         
-        au_len = librosa.get_duration(filename=audiopath)
-        if au_len > 7.0:
-             n_fau += 1
-             continue
+
 
         audiopaths_sid_text_new = []
         lengths = []
         for audiopath, sid, text in self.audiopaths_sid_text:
+
+          au_len = librosa.get_duration(filename=audiopath)
+          if au_len > 7.0:
+            n_fau += 1
+            continue
+        
             if self.min_text_len <= len(text) and len(text) <= self.max_text_len:
                 audiopaths_sid_text_new.append([audiopath, sid, text])
                 lengths.append(os.path.getsize(audiopath) // (2 * self.hop_length))
